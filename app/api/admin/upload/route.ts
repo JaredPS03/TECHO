@@ -1,9 +1,6 @@
 import pool from "@/lib/db"
 import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
-import { existsSync } from "fs"
 
 async function verifyAdmin() {
   const cookieStore = await cookies()
@@ -27,24 +24,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
     }
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
+    const HOSTINGER_URL = process.env.HOSTINGER_UPLOAD_URL
+    const SECRET = "mi_clave_super_secreta_123"
 
-    // Make sure we handle files that might not have a name property (like some mobile uploads)
-    const fileNameString = file.name || "upload.jpg"
-    const fileExt = fileNameString.split(".").pop() || "jpg"
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-    
-    // Save to public/uploads
-    const uploadDir = join(process.cwd(), "public", "uploads")
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
+    if (!HOSTINGER_URL) {
+      throw new Error("Falta configurar HOSTINGER_UPLOAD_URL en las variables de entorno de Vercel")
     }
-    
-    const filePath = join(uploadDir, fileName)
-    await writeFile(filePath, buffer)
 
-    return NextResponse.json({ url: `/uploads/${fileName}` })
+    const externalFormData = new FormData()
+    externalFormData.append("file", file)
+    externalFormData.append("secret", SECRET)
+
+    // Send the file to Hostinger PHP script
+    const uploadRes = await fetch(HOSTINGER_URL, {
+      method: "POST",
+      body: externalFormData
+    })
+
+    if (!uploadRes.ok) {
+      const errorText = await uploadRes.text()
+      throw new Error(`Hostinger rechazó el archivo: ${errorText}`)
+    }
+
+    const data = await uploadRes.json()
+    
+    return NextResponse.json({ url: data.url })
   } catch (error: any) {
     console.error("Upload error:", error)
     try {
