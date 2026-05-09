@@ -74,13 +74,31 @@ export function ArtworkModal({
     if (!file) return
 
     setIsUploading(true)
-    const formData = new FormData()
-    formData.append("file", file)
+    setError("")
 
     try {
-      const res = await fetch("/api/admin/upload", {
+      // 1. Convert file to Base64 directly in the browser
+      const base64String = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.onload = () => {
+          const result = reader.result as string
+          resolve(result.split(',')[1])
+        }
+        reader.onerror = error => reject(error)
+      })
+
+      // 2. Send directly to Hostinger (bypasses Vercel timeouts, size limits and IP blocks)
+      const res = await fetch("https://techo.art/HOSTINGER_upload.php", {
         method: "POST",
-        body: formData
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          secret: "mi_clave_super_secreta_123",
+          fileName: file.name || "upload.jpg",
+          fileBase64: base64String
+        })
       })
 
       if (res.ok) {
@@ -88,11 +106,11 @@ export function ArtworkModal({
         setImageUrl(data.url)
       } else {
         const errorData = await res.json().catch(() => ({ error: "Error de red" }))
-        setError(`Fallo: ${errorData.error || ""} ${errorData.details ? "(" + errorData.details + ")" : ""}`)
-        console.error("Server error details:", errorData)
+        setError(`Fallo al subir: ${errorData.error || res.statusText}`)
       }
-    } catch {
-      setError("Error al subir la imagen")
+    } catch (err: any) {
+      console.error(err)
+      setError(`Error de conexión: ${err.message || "Fallo desconocido"}`)
     } finally {
       setIsUploading(false)
     }
