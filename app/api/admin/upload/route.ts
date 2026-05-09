@@ -31,14 +31,22 @@ export async function POST(request: NextRequest) {
       throw new Error("Falta configurar HOSTINGER_UPLOAD_URL en las variables de entorno de Vercel")
     }
 
-    const externalFormData = new FormData()
-    externalFormData.append("file", file)
-    externalFormData.append("secret", SECRET)
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const base64String = buffer.toString('base64')
+    
+    const fileNameString = file.name || "upload.jpg"
 
-    // Send the file to Hostinger PHP script
     const uploadRes = await fetch(HOSTINGER_URL, {
       method: "POST",
-      body: externalFormData
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        secret: SECRET,
+        fileName: fileNameString,
+        fileBase64: base64String
+      })
     })
 
     if (!uploadRes.ok) {
