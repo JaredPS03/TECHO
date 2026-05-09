@@ -1,35 +1,81 @@
-# Guía de Despliegue para Hostinger (Next.js App Router)
+# Guía de Despliegue: Next.js en Vercel + Base de Datos en Hostinger
 
-He configurado tu proyecto (`next.config.mjs`) en modo **Standalone** para que el código quede comprimido, súper rápido y listo para funcionar en el entorno de Node.js de Hostinger.
+Ya que tu plan de Hostinger no soporta Node.js, la mejor arquitectura (y la más profesional) es separar el Frontend/Backend de la Base de Datos.
 
-Para subirlo exitosamente a Hostinger, sigue estos pasos al pie de la letra:
+**Arquitectura recomendada:**
+1. **Página Web y API (Next.js):** Alojado en **Vercel** (Gratis, optimizado para Next.js).
+2. **Base de Datos (MySQL):** Alojado en **Hostinger** (Tu plan actual).
 
-## 1. Construir la Aplicación (Build)
-Abre tu consola en la computadora y detén el servidor de desarrollo (`Ctrl` + `C`). Luego, ejecuta el siguiente comando para compilar todo el sistema:
-```bash
-pnpm run build
+Sigue estos pasos detallados para lograrlo:
+
+---
+
+## FASE 1: Preparar la Base de Datos en Hostinger
+
+Vercel necesita conectarse a tu base de datos de Hostinger. Para esto, debes permitir que conexiones externas (fuera de Hostinger) puedan acceder a tu base de datos.
+
+1. Entra a tu **hPanel** (Panel de Hostinger).
+2. Ve a la sección **Bases de Datos -> Bases de Datos MySQL**.
+3. **Crea una nueva base de datos** (o usa una existente). Anota el Nombre de la BD, Usuario y Contraseña.
+4. Ve a la sección **Bases de Datos -> MySQL Remoto** (Remote MySQL).
+5. En la opción "IP Remota" (Remote IP), ingresa `%` (un símbolo de porcentaje). Esto permite que Vercel se conecte sin importar qué IP use (ya que las IPs de Vercel son dinámicas).
+6. Selecciona tu base de datos y dale a **Crear/Añadir**.
+7. Ahora, averigua la **IP de tu servidor MySQL** de Hostinger. Suele estar en la parte superior de la página de Bases de Datos o en la información de tu cuenta (Suele ser una IP numérica como `193.168.x.x` o un dominio como `sql.hostinger.com`).
+
+**Tu archivo `.env` local y en producción se verá así:**
+```env
+DB_HOST=LA_IP_DE_HOSTINGER_O_DOMINIO_SQL
+DB_USER=tu_usuario_creado
+DB_PASSWORD=tu_contrasena_creada
+DB_NAME=tu_nombre_de_bd
 ```
-*(Esto creará una nueva carpeta oculta llamada `.next/standalone` que contiene tu servidor de producción listo para Hostinger).*
 
-## 2. Preparar los Archivos para Subir
-Hostinger necesita una estructura de carpetas específica. En tu computadora, crea una carpeta temporal (ej. en tu Escritorio, llamada `lista-para-subir`) y copia los siguientes archivos allí:
+---
 
-1. **Copia todo el contenido** que está dentro de `TECHO/.next/standalone/` y pégalo en tu carpeta temporal. (Dentro verás un archivo `server.js`).
-2. **Copia la carpeta** `public/` (de tu proyecto original TECHO) y pégala dentro de tu carpeta temporal.
-3. En tu carpeta temporal, verás que hay una carpeta llamada `.next`. Entra en ella y **copia la carpeta** `static/` desde tu proyecto original (`TECHO/.next/static/`) para pegarla ahí dentro. (La ruta debe quedar como `lista-para-subir/.next/static/`).
-4. **Copia tu archivo** `.env` (donde tienes tu `DATABASE_URL`) y ponlo en la carpeta temporal.
+## FASE 2: Subir tu Código a GitHub
 
-## 3. Configurar Hostinger (Panel de Control)
-1. Entra a tu panel de Hostinger (hPanel) y ve a la sección de **Avanzado -> Node.js**.
-2. Crea una **Nueva Aplicación Node.js**:
-   - **Versión de Node.js:** Selecciona la 20.x o la más actual.
-   - **Modo de Aplicación:** Production.
-   - **Directorio de la aplicación:** Pon el nombre de tu carpeta donde está tu dominio (usualmente `/public_html`).
-   - **Archivo de inicio (Startup file):** Escribe `server.js`
-3. Usando el **Administrador de Archivos de Hostinger** (o por FTP), sube **todo el contenido** de tu carpeta temporal `lista-para-subir` directamente a tu directorio `/public_html`.
-4. Regresa a la sección de Node.js en Hostinger y dale al botón de **Iniciar (Start)**.
+Vercel se conecta con GitHub para desplegar tu página automáticamente cada vez que haces un cambio.
 
-## ¿Qué acaba de cambiar en tu código para esto?
-- Modifiqué `next.config.mjs` para activar `output: "standalone"`, lo que quita carpetas gigantescas (como node_modules) y optimiza la velocidad.
-- Configuré todos los encabezados de seguridad HTTP nativos (XSS, HSTS, prevención de IFrames malignos) en la configuración del servidor, para que el servidor de Hostinger los aplique automáticamente.
-- Se añadió un limitador de peticiones (Middleware) para bloquear cualquier intento de hackeo por fuerza bruta en tu panel de administrador.
+1. Ve a [GitHub.com](https://github.com/) y crea una cuenta si no tienes.
+2. Crea un **Nuevo Repositorio** (privado o público). No le agregues README ni `.gitignore`.
+3. Abre la terminal en tu computadora (dentro de tu proyecto `TECHO`) y ejecuta:
+   ```bash
+   git init
+   git add .
+   git commit -m "Primer commit"
+   git branch -M main
+   git remote add origin https://github.com/TU_USUARIO/TU_REPOSITORIO.git
+   git push -u origin main
+   ```
+   *(Asegúrate de cambiar la URL por la de tu repositorio).*
+
+---
+
+## FASE 3: Desplegar en Vercel
+
+1. Ve a [Vercel.com](https://vercel.com/) y regístrate usando tu cuenta de GitHub.
+2. Haz clic en **"Add New..."** -> **"Project"**.
+3. Te aparecerá una lista con tus repositorios de GitHub. Busca el que acabas de crear y dale al botón **"Import"**.
+4. En la pantalla de configuración del proyecto:
+   - **Framework Preset:** Vercel detectará automáticamente que es `Next.js`. Déjalo así.
+   - **Environment Variables:** Aquí debes agregar las variables de entorno para que tu app se conecte a Hostinger. Copia y pega las credenciales que anotamos en la FASE 1:
+     - Nombre: `DB_HOST`, Valor: `(La IP de Hostinger)` -> Add
+     - Nombre: `DB_USER`, Valor: `(Tu usuario)` -> Add
+     - Nombre: `DB_PASSWORD`, Valor: `(Tu contraseña)` -> Add
+     - Nombre: `DB_NAME`, Valor: `(El nombre de tu BD)` -> Add
+5. Haz clic en **"Deploy"**.
+
+Vercel instalará todo, compilará la app (¡el `output: "standalone"` no molesta aquí, Vercel lo optimiza automáticamente!) y te dará una URL (ej. `tu-proyecto.vercel.app`) donde tu web ya estará viva y conectada a la base de datos de Hostinger.
+
+---
+
+## FASE 4 (Opcional pero recomendado): Usar tu Dominio de Hostinger en Vercel
+
+Si compraste el dominio `mi-subasta.com` en Hostinger y quieres que apunte a tu nueva web en Vercel:
+
+1. Ve al panel de control de tu proyecto en **Vercel** -> **Settings** -> **Domains**.
+2. Escribe tu dominio (ej. `mi-subasta.com`) y dale a Add.
+3. Vercel te dará unos registros de tipo **A** (una IP) y **CNAME** (ej. `cname.vercel-dns.com`).
+4. Ve a tu panel de **Hostinger**, entra en la sección **Dominios -> Editor de Zona DNS**.
+5. Borra los registros A o CNAME antiguos que apuntaban al hosting web, y agrega los nuevos que te dio Vercel.
+6. ¡Listo! En unas pocas horas (o minutos), al entrar a tu dominio cargará la aplicación de Vercel a la perfección.

@@ -30,11 +30,13 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    const fileExt = file.name.split(".").pop()
+    // Make sure we handle files that might not have a name property (like some mobile uploads)
+    const fileNameString = file.name || "upload.jpg"
+    const fileExt = fileNameString.split(".").pop() || "jpg"
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
     
     // Save to public/uploads
-    const uploadDir = join(process.cwd(), "public/uploads")
+    const uploadDir = join(process.cwd(), "public", "uploads")
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true })
     }
@@ -46,8 +48,8 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Upload error:", error)
     return NextResponse.json({ 
-      url: `https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&h=1000&fit=crop`,
-      message: "Using placeholder due to upload error"
-    })
+      error: error.message || "Error interno al subir la imagen",
+      details: String(error)
+    }, { status: 500 })
   }
 }
