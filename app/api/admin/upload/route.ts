@@ -47,6 +47,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: `/uploads/${fileName}` })
   } catch (error: any) {
     console.error("Upload error:", error)
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      fs.writeFileSync(path.join(process.cwd(), 'UPLOAD_ERROR_LOG.txt'), String(error.stack || error.message || error));
+    } catch(e){}
     return NextResponse.json({ 
       error: error.message || "Error interno al subir la imagen",
       details: String(error)

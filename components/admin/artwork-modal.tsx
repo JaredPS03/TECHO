@@ -87,7 +87,9 @@ export function ArtworkModal({
         const data = await res.json()
         setImageUrl(data.url)
       } else {
-        setError("Error al subir la imagen")
+        const errorData = await res.json().catch(() => ({ error: "Error de red" }))
+        setError(`Fallo: ${errorData.error || ""} ${errorData.details ? "(" + errorData.details + ")" : ""}`)
+        console.error("Server error details:", errorData)
       }
     } catch {
       setError("Error al subir la imagen")
