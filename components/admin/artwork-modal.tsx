@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import Image from "next/image"
 import {
   Dialog,
   DialogContent,
@@ -77,40 +76,24 @@ export function ArtworkModal({
     setError("")
 
     try {
-      // 1. Convert file to Base64 directly in the browser
-      const base64String = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.readAsDataURL(file)
-        reader.onload = () => {
-          const result = reader.result as string
-          resolve(result.split(',')[1])
-        }
-        reader.onerror = error => reject(error)
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData
       })
 
-      // 2. Send directly to Hostinger (bypasses Vercel timeouts, size limits and IP blocks)
-      const res = await fetch("https://techo.art/HOSTINGER_upload.php", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          secret: "mi_clave_super_secreta_123",
-          fileName: file.name || "upload.jpg",
-          fileBase64: base64String
-        })
-      })
+      const data = await res.json()
 
       if (res.ok) {
-        const data = await res.json()
         setImageUrl(data.url)
       } else {
-        const errorData = await res.json().catch(() => ({ error: "Error de red" }))
-        setError(`Fallo al subir: ${errorData.error || res.statusText}`)
+        setError(data.error || "Error al subir la imagen")
       }
     } catch (err: any) {
       console.error(err)
-      setError(`Error de conexión: ${err.message || "Fallo desconocido"}`)
+      setError("Error de conexión al subir la imagen")
     } finally {
       setIsUploading(false)
     }
@@ -182,12 +165,11 @@ export function ArtworkModal({
             <div className="flex items-start gap-4">
               {imageUrl ? (
                 <div className="relative size-24 overflow-hidden rounded-lg bg-muted">
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={imageUrl}
                     alt="Preview"
-                    fill
-                    className="object-cover"
-                    sizes="96px"
+                    className="size-full object-cover"
                   />
                   <button
                     type="button"

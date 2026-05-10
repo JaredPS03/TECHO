@@ -1,6 +1,6 @@
 "use client"
 
-import Image from "next/image"
+
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { X } from "lucide-react"
 
@@ -21,13 +21,11 @@ export function ImageModal({ imageUrl, title, open, onOpenChange }: ImageModalPr
           Imagen en tamaño completo de {title || "Obra"}
         </DialogTitle>
         <div className="relative w-full h-[85vh]">
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={imageUrl}
             alt={title || "Obra"}
-            fill
-            className="object-contain"
-            sizes="(max-width: 1200px) 100vw, 1200px"
-            priority
+            className="size-full object-contain"
           />
         </div>
         <button

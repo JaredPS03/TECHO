@@ -2,10 +2,17 @@
 // Archivo: upload.php
 // Sube este archivo a la carpeta public_html de tu Hostinger.
 
-// Permitir peticiones desde Vercel
+// Permitir peticiones desde Vercel (CORS)
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
+
+// Manejar la petición "preflight" que hace el navegador antes de enviar el JSON
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 
 // Clave secreta para que nadie más pueda subir imágenes a tu servidor
 $secret = "mi_clave_super_secreta_123";

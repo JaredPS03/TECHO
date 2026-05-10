@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Pencil, Trash2, Search } from "lucide-react"
@@ -61,12 +60,10 @@ export function ArtworkList({ artworks, onEdit, onDelete, onCloseAuction, onView
             >
               <div className="relative size-20 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {artwork.image_url ? (
-                  <Image
+                  <img
                     src={artwork.image_url}
                     alt={artwork.title}
-                    fill
-                    className="object-cover"
-                    sizes="80px"
+                    className="size-full object-cover"
                   />
                 ) : (
                   <div className="flex size-full items-center justify-center text-muted-foreground">

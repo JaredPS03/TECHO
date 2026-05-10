@@ -37,6 +37,8 @@ export interface ArtworkDisplay {
   title: string
   artist: string
   technique: string
+  dimensions: string | null
+  year: string | null
   description: string | null
   currentBid: number
   imageUrl: string
@@ -48,6 +50,8 @@ export function toArtworkDisplay(artwork: Artwork): ArtworkDisplay {
     title: artwork.title,
     artist: artwork.artist,
     technique: artwork.technique,
+    dimensions: artwork.dimensions || null,
+    year: artwork.year || null,
     description: artwork.description,
     currentBid: Math.max(Number(artwork.current_bid) || 0, Number(artwork.starting_price) || 0),
     imageUrl: artwork.image_url || "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&h=1000&fit=crop"

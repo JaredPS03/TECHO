@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import { Phone, Mail, ChevronDown, ChevronUp } from "lucide-react"
 import type { Bid } from "@/lib/types"
 
@@ -58,12 +57,10 @@ export function BidList({ bids }: BidListProps) {
               <div className="flex items-center gap-4">
                 <div className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-muted">
                   {artwork?.image_url ? (
-                    <Image
+                    <img
                       src={artwork.image_url}
                       alt={artwork.title || "Obra"}
-                      fill
-                      className="object-cover"
-                      sizes="64px"
+                      className="size-full object-cover"
                     />
                   ) : (
                     <div className="flex size-full items-center justify-center text-xs text-muted-foreground">

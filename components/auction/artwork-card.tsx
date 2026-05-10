@@ -1,6 +1,6 @@
 "use client"
 
-import Image from "next/image"
+
 import { Button } from "@/components/ui/button"
 import type { ArtworkDisplay } from "@/lib/types"
 
@@ -24,12 +24,11 @@ export function ArtworkCard({ artwork, onBid, onImageClick }: ArtworkCardProps) 
         className="relative aspect-[4/5] w-full overflow-hidden bg-muted cursor-pointer"
         onClick={() => onImageClick?.(artwork)}
       >
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={artwork.imageUrl}
           alt={artwork.title}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
       <div className="flex flex-1 flex-col justify-between p-5 sm:p-6">
@@ -40,6 +39,11 @@ export function ArtworkCard({ artwork, onBid, onImageClick }: ArtworkCardProps) 
           <p className="mt-1 text-sm font-medium text-foreground/80">
             {artwork.artist} · {artwork.technique}
           </p>
+          {(artwork.dimensions || artwork.year) && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {artwork.dimensions}{artwork.dimensions && artwork.year ? " · " : ""}{artwork.year}
+            </p>
+          )}
           {artwork.description && (
             <p
               className="mt-3 text-sm text-muted-foreground line-clamp-3 leading-relaxed"
