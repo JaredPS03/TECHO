@@ -1,24 +1,14 @@
 import pool from "@/lib/db"
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
-
-async function verifyAdmin() {
-  const cookieStore = await cookies()
-  const sessionId = cookieStore.get("admin_session")?.value
-  if (!sessionId) return false
-  
-  const [rows]: any = await pool.query("SELECT id FROM admin_users WHERE id = ?", [sessionId])
-  return rows.length > 0
-}
+import { isAdmin } from "@/lib/auth"
+import { serverError, unauthorized } from "@/lib/http"
 
 export async function GET() {
   try {
-    if (!(await verifyAdmin())) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    if (!(await isAdmin())) return unauthorized()
 
     const [rows]: any = await pool.query(`
-      SELECT b.*, 
+      SELECT b.*,
              a.id as a_id, a.title as a_title, a.artist as a_artist, a.image_url as a_image_url
       FROM bids b
       LEFT JOIN artworks a ON b.artwork_id = a.id
@@ -39,7 +29,7 @@ export async function GET() {
     })
 
     return NextResponse.json(data)
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error) {
+    return serverError("admin/bids", error)
   }
 }

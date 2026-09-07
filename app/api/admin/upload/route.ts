@@ -1,51 +1,36 @@
-import pool from "@/lib/db"
 import { NextRequest, NextResponse } from "next/server"
-import { cookies } from "next/headers"
+import { isAdmin } from "@/lib/auth"
+import { badRequest, serverError, unauthorized } from "@/lib/http"
 
-async function verifyAdmin() {
-  const cookieStore = await cookies()
-  const sessionId = cookieStore.get("admin_session")?.value
-  if (!sessionId) return false
-  
-  const [rows]: any = await pool.query("SELECT id FROM admin_users WHERE id = ?", [sessionId])
-  return rows.length > 0
-}
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+const MAX_BYTES = 5 * 1024 * 1024
 
 export async function POST(request: NextRequest) {
   try {
-    if (!(await verifyAdmin())) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    if (!(await isAdmin())) return unauthorized()
 
     const formData = await request.formData()
     const file = formData.get("file") as File | null
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 })
+      return badRequest("No file provided")
     }
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: "Formato no permitido. Usa JPG, PNG o WEBP." }, { status: 400 })
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return badRequest("Formato no permitido. Usa JPG, PNG o WEBP.")
     }
 
-    // Limit file size to 5MB
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "La imagen no debe pesar más de 5MB" }, { status: 400 })
+    if (file.size > MAX_BYTES) {
+      return badRequest("La imagen no debe pesar más de 5MB")
     }
 
-    // Convert to Base64 Data URI and return it directly
+    // Images are stored inline as Base64 data URIs in the artworks table, so
+    // the app needs no object storage and no separate upload host.
     const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const base64String = buffer.toString("base64")
-    const dataUri = `data:${file.type};base64,${base64String}`
+    const base64String = Buffer.from(bytes).toString("base64")
 
-    return NextResponse.json({ url: dataUri })
-  } catch (error: any) {
-    console.error("Upload error:", error)
-    return NextResponse.json({ 
-      error: error.message || "Error interno al subir la imagen"
-    }, { status: 500 })
+    return NextResponse.json({ url: `data:${file.type};base64,${base64String}` })
+  } catch (error) {
+    return serverError("admin/upload", error)
   }
 }

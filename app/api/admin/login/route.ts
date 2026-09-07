@@ -1,7 +1,8 @@
 import pool from "@/lib/db"
 import { NextRequest, NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
-import { cookies } from "next/headers"
+import { setSessionCookie } from "@/lib/auth"
+import { badRequest, serverError } from "@/lib/http"
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,36 +10,26 @@ export async function POST(request: NextRequest) {
     const { email, password } = body
 
     if (!email || !password) {
-      return NextResponse.json({ error: "Email and password required" }, { status: 400 })
+      return badRequest("Email and password required")
     }
 
     const [rows]: any = await pool.query(
-      "SELECT * FROM admin_users WHERE email = ?",
-      [email.toLowerCase()]
+      "SELECT id, email, password_hash FROM admin_users WHERE email = ?",
+      [String(email).toLowerCase()]
     )
 
     const admin = rows[0]
 
-    if (!admin) {
+    // Same response and roughly the same work for "no such user" and "wrong
+    // password", so the endpoint does not reveal which emails are registered.
+    if (!admin || !(await bcrypt.compare(password, admin.password_hash))) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
     }
 
-    const validPassword = await bcrypt.compare(password, admin.password_hash)
-    if (!validPassword) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
-    }
-
-    // Set a simple session cookie
-    const cookieStore = await cookies()
-    cookieStore.set("admin_session", admin.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7 // 7 days
-    })
+    await setSessionCookie(admin.id)
 
     return NextResponse.json({ success: true, admin: { id: admin.id, email: admin.email } })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error) {
+    return serverError("admin/login", error)
   }
 }
