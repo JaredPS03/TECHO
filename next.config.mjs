@@ -8,7 +8,8 @@ const nextConfig = {
   output: "standalone",
   outputFileTracingRoot: __dirname,
   typescript: {
-    ignoreBuildErrors: true,
+    // Type errors break the build, locally and in CI. The codebase is at 0 tsc errors.
+    ignoreBuildErrors: false,
   },
   images: {
     unoptimized: true,

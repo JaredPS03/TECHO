@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import useSWR from "swr"
 import { ArtworkCard } from "./artwork-card"
 import { BidModal } from "./bid-modal"
-import type { Artwork, ArtworkDisplay } from "@/lib/types"
+import type { Artwork, ArtworkDisplay, BidderInfo } from "@/lib/types"
 import { toArtworkDisplay } from "@/lib/types"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
@@ -18,12 +18,6 @@ const fetcher = async (url: string) => {
     throw new Error(data.error || 'An error occurred while fetching the data.')
   }
   return res.json()
-}
-
-interface BidderInfo {
-  fullName: string
-  whatsapp: string
-  email: string
 }
 
 export function ArtworkGallery() {
@@ -60,8 +54,8 @@ export function ArtworkGallery() {
     setIsModalOpen(true)
   }
 
-  const handleBidSubmit = async (bidAmount: number, info: { fullName: string; whatsapp: string; email: string }) => {
-    if (!selectedArtwork) return
+  const handleBidSubmit = async (bidAmount: number, info: BidderInfo): Promise<boolean> => {
+    if (!selectedArtwork) return false
 
     // Save bidder info to localStorage for future pre-filling
     saveBidderInfo(info)

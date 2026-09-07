@@ -25,6 +25,14 @@ export interface Bid {
   artwork?: Artwork
 }
 
+/** Contact details a bidder submits with a bid. The auction is contact-only:
+ *  no payment is processed, the organizers reach out to the winner. */
+export interface BidderInfo {
+  fullName: string
+  whatsapp: string
+  email: string
+}
+
 export interface AdminUser {
   id: string
   email: string

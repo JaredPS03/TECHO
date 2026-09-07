@@ -11,8 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { ArtworkDisplay } from "@/lib/types"
-import type { BidderInfo } from "@/hooks/use-bidder-info"
+import type { ArtworkDisplay, BidderInfo } from "@/lib/types"
 import { CheckCircle2 } from "lucide-react"
 
 interface BidModalProps {
