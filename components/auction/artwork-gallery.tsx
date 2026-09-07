@@ -21,8 +21,15 @@ const fetcher = async (url: string) => {
 }
 
 export function ArtworkGallery() {
+  // Artwork images are stored inline as Base64, so this response is ~6 MB for
+  // 14 pieces. Polling it every 5 seconds re-downloaded the whole catalogue
+  // before the previous request had finished. Bids are followed up by hand, so
+  // near-real-time refresh buys nothing: poll sparingly and refresh on demand
+  // via mutate() right after a bid is placed.
   const { data: artworks, error, mutate } = useSWR<Artwork[]>("/api/artworks", fetcher, {
-    refreshInterval: 5000 // Refresh every 5 seconds to get updated bids
+    refreshInterval: 60_000,
+    revalidateOnFocus: false,
+    dedupingInterval: 30_000,
   })
   const [selectedArtwork, setSelectedArtwork] = useState<ArtworkDisplay | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
