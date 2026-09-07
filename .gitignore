@@ -1,18 +1,51 @@
-# v0 sandbox internal files
+# ─── Dependencias ─────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ─── Salida de build de Next.js ───────────────────────────────────────────────
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# ─── Variables de entorno (NUNCA subir credenciales reales) ───────────────────
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+!.env.example
+
+# ─── Despliegue ───────────────────────────────────────────────────────────────
+.vercel/
+hostinger_deploy/
+*.zip
+
+# ─── Subidas locales ──────────────────────────────────────────────────────────
+public/uploads/*
+!public/uploads/.gitkeep
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Editores y sistema operativo ─────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# ─── Archivos internos del sandbox v0 ─────────────────────────────────────────
 __v0_runtime_loader.js
 __v0_devtools.tsx
 __v0_jsx-dev-runtime.ts
 .snowflake/
 .v0-trash/
-.vercel/
-
-# Environment variables
-.env*.local
-
-# Common ignores
-node_modules
-.next/
-.DS_Store
-.env
-*.zip
-hostinger_deploy/
