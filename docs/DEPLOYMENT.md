@@ -1,81 +1,152 @@
-# Guía de Despliegue: Next.js en Vercel + Base de Datos en Hostinger
+# Despliegue — Subasta de Arte con Causa
 
-Ya que tu plan de Hostinger no soporta Node.js, la mejor arquitectura (y la más profesional) es separar el Frontend/Backend de la Base de Datos.
+> [← Volver al README](../README.md) · [Back to README (EN)](../README.en.md)
 
-**Arquitectura recomendada:**
-1. **Página Web y API (Next.js):** Alojado en **Vercel** (Gratis, optimizado para Next.js).
-2. **Base de Datos (MySQL):** Alojado en **Hostinger** (Tu plan actual).
+La arquitectura separa aplicación y base de datos:
 
-Sigue estos pasos detallados para lograrlo:
+| Pieza | Dónde | Por qué |
+| :--- | :--- | :--- |
+| **Aplicación Next.js** | Vercel | Despliegue continuo desde `main`, gratuito y optimizado para Next.js |
+| **Base de datos MySQL** | Hosting de la organización (Hostinger) | Ya estaba contratado; cero coste adicional |
+
+El plan de hosting contratado no soporta Node.js, así que alojar ahí la aplicación no era viable. Separar las dos
+piezas resolvió el problema sin gastar nada más.
 
 ---
 
-## FASE 1: Preparar la Base de Datos en Hostinger
+## Fase 1 — Preparar MySQL para acceso remoto
 
-Vercel necesita conectarse a tu base de datos de Hostinger. Para esto, debes permitir que conexiones externas (fuera de Hostinger) puedan acceder a tu base de datos.
+Vercel se conecta a la base de datos desde fuera del hosting, así que hay que permitir conexiones externas.
 
-1. Entra a tu **hPanel** (Panel de Hostinger).
-2. Ve a la sección **Bases de Datos -> Bases de Datos MySQL**.
-3. **Crea una nueva base de datos** (o usa una existente). Anota el Nombre de la BD, Usuario y Contraseña.
-4. Ve a la sección **Bases de Datos -> MySQL Remoto** (Remote MySQL).
-5. En la opción "IP Remota" (Remote IP), ingresa `%` (un símbolo de porcentaje). Esto permite que Vercel se conecte sin importar qué IP use (ya que las IPs de Vercel son dinámicas).
-6. Selecciona tu base de datos y dale a **Crear/Añadir**.
-7. Ahora, averigua la **IP de tu servidor MySQL** de Hostinger. Suele estar en la parte superior de la página de Bases de Datos o en la información de tu cuenta (Suele ser una IP numérica como `193.168.x.x` o un dominio como `sql.hostinger.com`).
+1. Entra al **hPanel** de Hostinger.
+2. Ve a **Bases de datos → Bases de datos MySQL**.
+3. Crea la base de datos (o usa la existente). Anota **nombre, usuario y contraseña**.
+4. Ve a **Bases de datos → MySQL remoto**.
+5. En **IP remota** escribe `%`. Las IP de salida de Vercel son dinámicas, así que restringir por IP no es
+   practicable en el plan gratuito.
+6. Selecciona tu base de datos y pulsa **Crear**.
+7. Anota el **host MySQL** (una IP o un dominio tipo `sqlXXX.hostinger.io`), visible en la ficha de la base de
+   datos.
 
-**Tu archivo `.env` local y en producción se verá así:**
-```env
-DB_HOST=LA_IP_DE_HOSTINGER_O_DOMINIO_SQL
-DB_USER=tu_usuario_creado
-DB_PASSWORD=tu_contrasena_creada
-DB_NAME=tu_nombre_de_bd
+> ⚠️ Abrir el acceso con `%` significa que cualquier IP puede *intentar* conectarse. La contraseña de la base de
+> datos pasa a ser la única barrera: que sea larga y única, y no la reutilices en ningún otro sitio.
+
+### Crear el esquema
+
+Desde tu máquina, apuntando al MySQL remoto:
+
+```bash
+MYSQL_HOST=<host-de-hostinger> \
+MYSQL_USER=<usuario> \
+MYSQL_PASSWORD=<contraseña> \
+MYSQL_DATABASE=<nombre-bd> \
+pnpm db:setup
 ```
 
----
+O importando [`database.sql`](../database.sql) desde phpMyAdmin en el hPanel.
 
-## FASE 2: Subir tu Código a GitHub
+### Crear el usuario administrador
 
-Vercel se conecta con GitHub para desplegar tu página automáticamente cada vez que haces un cambio.
+```bash
+MYSQL_HOST=<host> MYSQL_USER=<usuario> MYSQL_PASSWORD=<contraseña> MYSQL_DATABASE=<bd> \
+ADMIN_EMAIL=admin@tudominio.org \
+ADMIN_PASSWORD='<contraseña larga y única>' \
+pnpm db:admin
+```
 
-1. Ve a [GitHub.com](https://github.com/) y crea una cuenta si no tienes.
-2. Crea un **Nuevo Repositorio** (privado o público). No le agregues README ni `.gitignore`.
-3. Abre la terminal en tu computadora (dentro de tu proyecto `TECHO`) y ejecuta:
-   ```bash
-   git init
-   git add .
-   git commit -m "Primer commit"
-   git branch -M main
-   git remote add origin https://github.com/TU_USUARIO/TU_REPOSITORIO.git
-   git push -u origin main
-   ```
-   *(Asegúrate de cambiar la URL por la de tu repositorio).*
+El script guarda únicamente el hash bcrypt. Ejecutarlo de nuevo con el mismo correo **cambia la contraseña**: es
+también el procedimiento de rotación.
 
 ---
 
-## FASE 3: Desplegar en Vercel
+## Fase 2 — Desplegar en Vercel
 
-1. Ve a [Vercel.com](https://vercel.com/) y regístrate usando tu cuenta de GitHub.
-2. Haz clic en **"Add New..."** -> **"Project"**.
-3. Te aparecerá una lista con tus repositorios de GitHub. Busca el que acabas de crear y dale al botón **"Import"**.
-4. En la pantalla de configuración del proyecto:
-   - **Framework Preset:** Vercel detectará automáticamente que es `Next.js`. Déjalo así.
-   - **Environment Variables:** Aquí debes agregar las variables de entorno para que tu app se conecte a Hostinger. Copia y pega las credenciales que anotamos en la FASE 1:
-     - Nombre: `DB_HOST`, Valor: `(La IP de Hostinger)` -> Add
-     - Nombre: `DB_USER`, Valor: `(Tu usuario)` -> Add
-     - Nombre: `DB_PASSWORD`, Valor: `(Tu contraseña)` -> Add
-     - Nombre: `DB_NAME`, Valor: `(El nombre de tu BD)` -> Add
-5. Haz clic en **"Deploy"**.
+1. En [vercel.com](https://vercel.com), **Add New → Project** e importa el repositorio de GitHub.
+2. **Framework Preset:** Vercel detecta Next.js automáticamente. Déjalo como está.
+3. Declara las **variables de entorno**:
 
-Vercel instalará todo, compilará la app (¡el `output: "standalone"` no molesta aquí, Vercel lo optimiza automáticamente!) y te dará una URL (ej. `tu-proyecto.vercel.app`) donde tu web ya estará viva y conectada a la base de datos de Hostinger.
+| Variable | Valor |
+| :--- | :--- |
+| `MYSQL_HOST` | Host MySQL de Hostinger |
+| `MYSQL_PORT` | `3306` (opcional) |
+| `MYSQL_USER` | Usuario de la base de datos |
+| `MYSQL_PASSWORD` | Contraseña de la base de datos |
+| `MYSQL_DATABASE` | Nombre de la base de datos |
+| `SESSION_SECRET` | Cadena aleatoria de 32+ caracteres |
+
+Genera el secreto de sesión con:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+> ⚠️ **`SESSION_SECRET` es obligatoria.** Firma la cookie del panel de administración. Si falta, el inicio de
+> sesión devuelve error 500 — a propósito: es preferible fallar de forma visible que recurrir en silencio a un
+> secreto débil.
+>
+> Los nombres correctos son `MYSQL_*`. Versiones antiguas de esta guía mencionaban `DB_*`, que
+> [`lib/db.ts`](../lib/db.ts) nunca ha leído.
+
+4. Pulsa **Deploy**.
+
+Cada push a `main` vuelve a desplegar automáticamente.
 
 ---
 
-## FASE 4 (Opcional pero recomendado): Usar tu Dominio de Hostinger en Vercel
+## Fase 3 — Dominio propio
 
-Si compraste el dominio `mi-subasta.com` en Hostinger y quieres que apunte a tu nueva web en Vercel:
+1. En Vercel: **Settings → Domains**, añade el dominio.
+2. Vercel devuelve un registro **A** y/o un **CNAME**.
+3. En Hostinger: **Dominios → Editor de zona DNS**.
+4. Sustituye los registros A/CNAME que apuntaban al hosting web por los que indica Vercel.
+5. La propagación tarda de minutos a unas horas. Vercel emite el certificado TLS solo.
 
-1. Ve al panel de control de tu proyecto en **Vercel** -> **Settings** -> **Domains**.
-2. Escribe tu dominio (ej. `mi-subasta.com`) y dale a Add.
-3. Vercel te dará unos registros de tipo **A** (una IP) y **CNAME** (ej. `cname.vercel-dns.com`).
-4. Ve a tu panel de **Hostinger**, entra en la sección **Dominios -> Editor de Zona DNS**.
-5. Borra los registros A o CNAME antiguos que apuntaban al hosting web, y agrega los nuevos que te dio Vercel.
-6. ¡Listo! En unas pocas horas (o minutos), al entrar a tu dominio cargará la aplicación de Vercel a la perfección.
+El dominio en producción es [`techoax.art`](https://www.techoax.art/).
+
+---
+
+## Rotar la contraseña de administración
+
+Hazlo si sospechas que la credencial se expuso — por ejemplo, si alguna vez estuvo escrita en un archivo
+versionado. **Borrar el archivo no basta: el historial de git conserva su contenido.**
+
+```bash
+MYSQL_HOST=<host> MYSQL_USER=<usuario> MYSQL_PASSWORD=<contraseña> MYSQL_DATABASE=<bd> \
+ADMIN_EMAIL=<el correo existente> \
+ADMIN_PASSWORD='<contraseña nueva>' \
+pnpm db:admin
+```
+
+Rotar además `SESSION_SECRET` en Vercel invalida de golpe todas las sesiones abiertas.
+
+---
+
+## Verificación posterior al despliegue
+
+```bash
+# El catálogo responde (ojo: la respuesta ronda los 6 MB)
+curl -s -o /dev/null -w "%{http_code} %{size_download} bytes\n" https://www.techoax.art/api/artworks
+
+# Los endpoints de administración rechazan a quien no tiene sesión
+curl -s -o /dev/null -w "%{http_code}\n" https://www.techoax.art/api/admin/bids     # esperado: 401
+curl -s -o /dev/null -w "%{http_code}\n" https://www.techoax.art/api/admin/artworks # esperado: 401
+
+# Las cabeceras de seguridad están presentes
+curl -sI https://www.techoax.art/ | grep -iE "strict-transport|x-frame|x-content-type|referrer-policy"
+```
+
+Y una comprobación manual: entra en `/admin`, inicia sesión y confirma que el listado de obras y el de pujas
+cargan.
+
+---
+
+## Problemas frecuentes
+
+| Síntoma | Causa probable |
+| :--- | :--- |
+| `500` al iniciar sesión | Falta `SESSION_SECRET` en Vercel, o tiene menos de 32 caracteres |
+| Sesión cerrada tras desplegar | `SESSION_SECRET` cambió: las cookies firmadas con el valor anterior dejan de ser válidas. Vuelve a iniciar sesión |
+| `ETIMEDOUT` / `ECONNREFUSED` | Falta el acceso remoto (`%`) en MySQL remoto, o el host es incorrecto |
+| Catálogo vacío pero sin error | No hay obras con `is_active = true` |
+| El catálogo tarda mucho | Comportamiento conocido: las imágenes van en Base64 dentro de la respuesta (~6 MB). Ver [`ARCHITECTURE.md § 3.2`](ARCHITECTURE.md#32-imágenes-en-base64-dentro-de-la-base-de-datos) |
+| `Data too long for column 'image_url'` | La columna sigue siendo `TEXT`. Inicia sesión como administrador y llama a `POST /api/migrate` |

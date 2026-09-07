@@ -1,0 +1,42 @@
+name: ✨ Proponer una funcionalidad
+description: Una idea para mejorar la plataforma
+title: "[Feature]: "
+labels: ["enhancement"]
+
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: ¿Qué problema resuelve?
+      description: Empieza por el problema, no por la solución.
+      placeholder: No hay forma de saber cuándo cierra la subasta de una obra.
+    validations:
+      required: true
+
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área afectada
+      multiple: true
+      options:
+        - Catálogo y pujas
+        - Panel de administración
+        - Base de datos
+        - Seguridad
+        - Rendimiento
+        - Documentación
+        - CI / despliegue
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas consideradas

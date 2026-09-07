@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: 🚀 Ver la plataforma en vivo
+    url: https://www.techoax.art
+    about: Antes de reportar algo, comprueba si también ocurre en producción.
+
+  - name: 📚 Documentación técnica
+    url: https://github.com/JaredPS03/TECHO/tree/main/docs
+    about: Arquitectura, modelo de datos, referencia de la API y guía de despliegue.
+
+  - name: 🔒 Reportar un problema de seguridad
+    url: https://github.com/JaredPS03
+    about: No abras un issue público. Escribe en privado al autor.

@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Type-check & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # The build never opens a database connection or issues a session, but
+      # the code reads these at module load. Dummy values keep CI free of
+      # secrets, so the pipeline is reproducible from a fork.
+      SESSION_SECRET: ci-placeholder-secret-value-32-chars-min
+      MYSQL_HOST: localhost
+      MYSQL_USER: ci
+      MYSQL_PASSWORD: ci
+      MYSQL_DATABASE: techo
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build

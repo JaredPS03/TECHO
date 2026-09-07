@@ -1,0 +1,69 @@
+Copyright (c) 2026 Jared Silva. All rights reserved.
+Todos los derechos reservados.
+
+================================================================================
+ENGLISH
+================================================================================
+
+This software and its source code, including all associated documentation and
+assets (the "Software"), are the exclusive property of Jared Silva.
+
+This repository is made publicly visible for the sole purposes of portfolio
+presentation, technical evaluation and code review by prospective employers,
+clients and collaborators.
+
+NO LICENSE IS GRANTED. You may view and read this source code. You may NOT,
+without prior written permission from the copyright holder:
+
+  - copy, reproduce or republish the Software, in whole or in part;
+  - modify, adapt or create derivative works based on the Software;
+  - distribute, sublicense, sell, rent or lease the Software;
+  - use the Software or any part of it in any project, product or service,
+    whether commercial or non-commercial;
+  - remove or alter this notice or any copyright attribution.
+
+The TECHO name, logo and brand assets belong to their respective owners and are
+not covered by this notice. Third-party dependencies listed in package.json
+remain subject to their own respective licenses.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM, OUT
+OF OR IN CONNECTION WITH THE SOFTWARE OR ITS USE.
+
+For licensing enquiries, contact the author through https://github.com/JaredPS03
+
+================================================================================
+ESPAÑOL
+================================================================================
+
+Este software y su código fuente, incluidos toda la documentación y los recursos
+asociados (el "Software"), son propiedad exclusiva de Jared Silva.
+
+Este repositorio es públicamente visible con el único fin de servir como
+portafolio y permitir la evaluación técnica del código por parte de empresas,
+clientes y colaboradores potenciales.
+
+NO SE CONCEDE NINGUNA LICENCIA. Puedes ver y leer este código fuente. NO puedes,
+sin autorización previa y por escrito del titular de los derechos:
+
+  - copiar, reproducir ni republicar el Software, total o parcialmente;
+  - modificar, adaptar ni crear obras derivadas basadas en el Software;
+  - distribuir, sublicenciar, vender, alquilar ni arrendar el Software;
+  - utilizar el Software ni ninguna parte de él en ningún proyecto, producto o
+    servicio, sea comercial o no comercial;
+  - eliminar ni alterar este aviso ni ninguna atribución de derechos de autor.
+
+El nombre, el logotipo y los recursos de marca de TECHO pertenecen a sus
+respectivos titulares y no están cubiertos por este aviso. Las dependencias de
+terceros listadas en package.json permanecen sujetas a sus respectivas
+licencias.
+
+EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O
+IMPLÍCITA, INCLUIDAS ENTRE OTRAS LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD
+PARA UN FIN DETERMINADO Y NO INFRACCIÓN. EN NINGÚN CASO EL AUTOR SERÁ
+RESPONSABLE DE RECLAMACIONES, DAÑOS U OTRAS RESPONSABILIDADES DERIVADAS DEL
+SOFTWARE O DE SU USO.
+
+Para consultas sobre licencias, contacta al autor en https://github.com/JaredPS03

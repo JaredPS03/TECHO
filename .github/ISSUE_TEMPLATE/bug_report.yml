@@ -1,0 +1,77 @@
+name: 🐛 Reportar un bug
+description: Algo no funciona como debería
+title: "[Bug]: "
+labels: ["bug"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportarlo. Cuanto más concreto sea, más rápido se arregla.
+
+        ⚠️ **Si has encontrado un problema de seguridad, no lo publiques aquí.**
+        Escribe en privado al autor a través de https://github.com/JaredPS03
+
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Descripción
+      description: ¿Qué ocurre?
+      placeholder: Al pujar por una obra, el precio mostrado no se actualiza hasta recargar la página.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduccion
+    attributes:
+      label: Pasos para reproducirlo
+      value: |
+        1. Ir a '...'
+        2. Pulsar en '...'
+        3. Observar que '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Comportamiento esperado
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: ¿Dónde ocurre?
+      options:
+        - Catálogo público
+        - Formulario de puja
+        - Panel de administración
+        - Otro / no estoy seguro
+    validations:
+      required: true
+
+  - type: dropdown
+    id: entorno
+    attributes:
+      label: Entorno
+      options:
+        - Producción (techoax.art)
+        - Local (pnpm dev)
+        - Ambos
+    validations:
+      required: true
+
+  - type: input
+    id: dispositivo
+    attributes:
+      label: Dispositivo y navegador
+      placeholder: iPhone 14 · Safari 17
+    validations:
+      required: true
+
+  - type: textarea
+    id: capturas
+    attributes:
+      label: Capturas o errores de consola
+      description: No incluyas datos personales de pujadores ni credenciales.
